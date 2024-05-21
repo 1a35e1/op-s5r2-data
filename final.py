@@ -16,21 +16,20 @@ os.mkdir(FOLDER)
 
 # Read the raw data file
 data = []
-with open('raw-data.csv', 'r') as file:
+with open('data/cycle-22-final-scores.csv', 'r') as file:
   reader = csv.reader(file)
   for row in reader:
     # Skip the first row
-    if row[0] == 'Author':
+    if row[0] == 'Title':
       continue
     
     # Map the row to a dictionary based on the headers
     data.append({
-      'author': row[0],
+      'title': row[0],
       'proposal_url': row[1],
-      'title': row[2],
+      'mission': row[2],
       'total': row[3],
       'rubric_results': row[4],
-      'mission': row[5]
     })
 
   # Convert the data to a pandas dataframe
@@ -53,21 +52,25 @@ for mission in missions:
 total_rows = df['mission'].value_counts()
 
 # => Plot, Entries by mission
-plt.bar(total_rows.index, total_rows.values)
-plt.xlabel('Mission')
-plt.ylabel('Number of submissions')
-plt.title('Entries per Mission')
-plt.xticks(rotation=90)
-plt.savefig('plots/entries-per-mission.png')
+plt.figure(figsize=(20, 12))
+
+bars = plt.bar(total_rows.index, total_rows.values)
+plt.xlabel('Mission', fontsize=12)
+plt.ylabel('Number of submissions', fontsize=12)
+plt.title('Final entries scored per Mission', fontsize=18)
+plt.xticks(rotation=45, ha='right')
+
+# Add counts on top of the bars
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2, yval + 0.5, int(yval), ha='center', va='bottom')
+
+
+plt.tight_layout()
+plt.savefig('plots/final-entries-per-mission.png')
 
 print(total_rows)
 
-# 
-# Deep Dive into each mission
-# 
-
-
-# For each row in the dataframe, further expand the rubric results
 
 # Create an empty dataframe to store the expanded data
 master_list = []
@@ -82,7 +85,6 @@ for index, row in df.iterrows():
   # Mark the row as not scored when we have no rubric_results
   if criteria_scored == 0:    
     master_list.append({
-      'author': row['author'],
       'proposal_url': row['proposal_url'],
       'title': row['title'],
       'total': row['total'],
@@ -96,7 +98,6 @@ for index, row in df.iterrows():
   # Add the criteria data to the new dataframe
   for criteria in criteria_data:  
     master_list.append({
-      'author': row['author'],
       'proposal_url': row['proposal_url'],
       'title': row['title'],
       'total': row['total'],
@@ -110,7 +111,7 @@ for index, row in df.iterrows():
 
 
 df2 = pd.DataFrame(master_list)  
-print(df2)
+# print(df2)
 
 # save the new dataframe to a csv file
-df2.to_csv('expanded-data.csv', index=False)
+df2.to_csv('final-scores-expanded.csv', index=False)
